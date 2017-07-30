@@ -70,7 +70,6 @@ amulet
 anafora
 anagram
 anakonda
-analni seks
 analogija
 ananas
 anapest
@@ -110,7 +109,6 @@ apno
 apokalipsa
 apokopa
 apostol
-apostolska dela
 apostrof
 april
 apsida
@@ -225,7 +223,6 @@ belgijec
 belina
 beljak
 beljak
-belo vino
 belorušèina
 beloènica
 beluš
@@ -500,9 +497,6 @@ disk
 diskriminacija
 disprozij
 divizija
-divja maèka
-divji lovec
-divji petelin
 divjina
 dlaka
 dlan
@@ -574,14 +568,12 @@ duhovšèina
 duša
 dušik
 dvig
-dvižni most
 dvoboj
 dvojina
 dvojèek
 dvom
 dvopièje
 dvor
-dvorni norec
 dvovprega
 dvoživka
 džainist
