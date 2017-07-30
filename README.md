@@ -1,2 +1,3 @@
-# vislice
-Igrica vislice za UVP
+# Vislice
+Igrica vislice za UVP.
+
