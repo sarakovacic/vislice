@@ -1,0 +1,117 @@
+library(readr)
+library(dplyr)
+
+
+testni_podatki <- read.csv('testni_podatki.csv', stringsAsFactors = FALSE)
+ucni_podatki <- read.csv('ucni_podatki.csv')
+
+#opazimo, da bi 'head' iz obeh tabel moral biti kar prva vrstica tabele, brez X
+#Potrebno je torej spremeniti "naslovno vrstico" v prvo vrstico tabele.
+#To vrstico je potem potrebno spremeniti iz X1.14233 v 1.14233
+
+imena_stolpcev <- colnames(testni_podatki)
+imena_stolpcev <- gsub('\\X', '', imena_stolpcev)  #odstranitev X-a 
+nova_imena_stolpcev <- as.data.frame(t(imena_stolpcev))  #transponiranje
+
+names(testni_podatki) <- c("V1", "V2", "V3", "V4", "V5", "V6", "V7")
+
+testni_podatki <- rbind(testni_podatki, nova_imena_stolpcev) 
+
+#prvi stolec izgleda kot da samo indeksira, zato data <- NULL
+
+#testni_podatki$V1 <- NULL
+
+#opazimo da ima en podatek v stolpcu V2 vsebovan * 10^-5, SPREMENIMO GA: 
+#data.frame[row_number, column_number] = new_value   8.38371346378874 * 10^-5
+
+testni_podatki[19, "V2"] <- 0.0000838371346378874 # da je to delovalo, sem v read.csv dodala stringsasfactors=false
+
+#pogledamo kakega tipa je kateri stolpec
+k <- lapply(testni_podatki, typeof)
+
+#vse ki so characterji, popravimo as.numeric (poglej ce obstaja krajsa pot, da bi popravila vse na enkrat)
+
+testni_podatki$V2 <- as.numeric(as.character(testni_podatki$V2))
+testni_podatki$V3 <- as.numeric(as.character(testni_podatki$V3))
+testni_podatki$V4 <- as.numeric(as.character(testni_podatki$V4))
+testni_podatki$V5 <- as.numeric(as.character(testni_podatki$V5))
+testni_podatki$V6 <- as.numeric(as.character(testni_podatki$V6))
+testni_podatki$V7 <- as.numeric(as.character(testni_podatki$V7))
+
+#----TESTNI PODATKI SO SEDAJ UREJENI----------
+
+#ponovimo postopek za ucne podatke:
+
+imena_stolpcev2 <- colnames(ucni_podatki)
+imena_stolpcev2 <- gsub('\\X', '', imena_stolpcev2)  #odstranitev X-a 
+nova_imena_stolpcev2 <- as.data.frame(t(imena_stolpcev2))  #transponiranje
+
+names(ucni_podatki) <- c("V1", "V2", "V3", "V4", "V5", "V6", "V7")
+
+ucni_podatki <- rbind(ucni_podatki, nova_imena_stolpcev2) 
+#ucni_podatki$V1 <- NULL
+
+#odstraniti treba vrstice 59, 528, 775, 922, 939 (manjkajo podatki)
+ucni_podatki <- ucni_podatki[-c(59, 528, 775, 922, 939), ]
+r <- lapply(testni_podatki, typeof) #vsi so "double" torej je OK. 
+
+#-------UCNI IN TESTNI PODATKI SO UREJENI--------
+
+library(caret)
+
+trainData <- ucni_podatki
+testData <- testni_podatki
+
+#1.KORAK (na ucni mnozici naucite najboljsi model za napoved ciljne spremenljivke v podatkih)
+
+ucni_razredi <- read.csv('ucni_razredi.csv')
+
+#ucne podatke zdruzimo z ucnimi razredi
+
+names(ucni_razredi) <- c("V1","N")
+ucni_razredi <- ucni_razredi[-c(797, 317, 648, 814, 193), ]  #vrstice z manjkanjočimi podatki...
+skupni_ucni <- merge(ucni_podatki, ucni_razredi) 
+skupni_ucni <- skupni_ucni[-c(12, 568), ]  #manjkajoči podatki spet...
+skupni_ucni$V1 <- NULL
+
+skupni_ucni$N <- as.factor(skupni_ucni$N)
+
+skupni_ucni$V2 <- as.numeric(as.character(skupni_ucni$V2))
+skupni_ucni$V3 <- as.numeric(as.character(skupni_ucni$V3))
+skupni_ucni$V4 <- as.numeric(as.character(skupni_ucni$V4))
+skupni_ucni$V5 <- as.numeric(as.character(skupni_ucni$V5))
+skupni_ucni$V6 <- as.numeric(as.character(skupni_ucni$V6))
+skupni_ucni$V7 <- as.numeric(as.character(skupni_ucni$V7))
+r <- lapply(skupni_ucni, typeof)
+
+#knnFit <- train(N ~ ., data=skupni_ucni, method="knn")
+#knnFit <- train(N ~ ., data=skupni_ucni, method="knn", na.action = na.pass)
+
+X <- skupni_ucni;
+X$N <- NULL;
+Y <- skupni_ucni$N;
+knnFit <- train(X, Y, method="knn");
+str(knnFit);
+#model <- train(N~., data=skupni_ucni, method='glm')
+
+# a) linear algorithms
+#set.seed(7)
+#fit.lda <- train(N~., data=skupni_ucni, method="lda", metric=metric, na.action = na.pass )
+# b) nonlinear algorithms
+# CART
+#set.seed(7)
+#fit.cart <- train(N~., data=skupni_ucni, method="rpart", metric=metric, trControl=control)
+# kNN
+#set.seed(7)
+#fit.knn <- train(N~., data=skupni_ucni, method="knn", metric=metric, trControl=control)
+# c) advanced algorithms
+# SVM
+#set.seed(7)
+#fit.svm <- train(N~., data=skupni_ucni, method="svmRadial", metric=metric, trControl=control)
+# Random Forest
+#set.seed(7)
+#fit.rf <- train(N~., data=skupni_ucni, method="rf", metric=metric, trControl=control)
+
+
+# Model sedaj lahko uporabimo za napoved vrednosti na testni množici
+#predictions <- predict(knnFit, newdata = testData)
